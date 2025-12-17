@@ -11,13 +11,14 @@ This project implements an IERC-721 compatible token collection using Solidity f
 ## Features
 
 - Collection tokenomics fully customizable.
-- Implements the IERC721 interface, ensuring compliance with the   NFT standard for transfers, approvals, and ownership tracking.
+- Implements the IERC721 interface, ensuring compliance with the NFT standard for transfers, approvals, and ownership tracking.
 - Implements Chainlink VRF for a trustful source of number randomness.
 - Each token stores metadata, including token rarity. 
 - Secure fund withdrawal restricted to contract owner.
 - Includes unit tests covering both success and failure cases.
 - Supports IERC721Receiver for safe contract-to-contract transfers.
 - Includes a standard deploy script.
+- JSONs and NFTs images are saved on IPFS network.
 
 
 ## Run Locally on WSL  (Windows Subsystem for Linux) <br>https://learn.microsoft.com/en-us/windows/wsl/install
@@ -25,13 +26,13 @@ This project implements an IERC-721 compatible token collection using Solidity f
 Want to run this project? Make sure 
 
 ```bash
-  git clone https://github.com/gabrieleMartignon/IERC-721_NFT_Project
+  git clone https://github.com/gabrieleMartignon/DnA-Collection-NFTs
 ```
 
 Go to the project directory
 
 ```bash
-  cd IERC-721_NFT_Project
+  cd DnA-Collection-NFTs
 ```
 
 Compile 
@@ -81,4 +82,4 @@ These tests and this contract are not intended to be production-ready.
 - Email: gabrielemartignon@gmail.com  
 - GitHub: https://github.com/gabrieleMartignon  
 - LinkedIn: https://www.linkedin.com/in/gabrielemartignon
-- Project Contract deployed on Sepolia : https://sepolia.etherscan.io/address/0x7CfE312115A21311b0e2F7C0876E0765e514BF90
+- Project Contract deployed on Sepolia : [https://sepolia.etherscan.io/address/0x93c3514f01f11f1729a8bbf341b79fd22e86f4f0](https://sepolia.etherscan.io/address/0x93c3514f01f11f1729a8bbf341b79fd22e86f4f0)
