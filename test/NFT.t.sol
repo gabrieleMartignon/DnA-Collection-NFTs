@@ -26,7 +26,7 @@ contract NFTTest is Test {
         subId = coordinatorMock.createSubscription();
 
         // Fund subscription
-        coordinatorMock.fundSubscription(subId, 10000000000 ether);
+        coordinatorMock.fundSubscriptionWithNative{value : 10000000 ether}(subId);
 
         // Create a instance of the NFT Contract
         nftContract = new NFT("DnA collection", "DnA", 1 ether, 1000, address(coordinatorMock), subId);
@@ -36,7 +36,7 @@ contract NFTTest is Test {
     }
 
     function testMint_OutOfSupply() public {
-        stdstore.target(address(nftContract)).sig("nextTokenId()").checked_write(1000);
+        stdstore.target(address(nftContract)).sig("lastTokenId()").checked_write(1000);
         vm.expectRevert("No more NFT available for minting");
         nftContract.mint{value: 1 ether}();
     }
@@ -59,7 +59,7 @@ contract NFTTest is Test {
         RequestStatus memory status = nftContract.getRequestStatus(requestId);
         assertTrue(status.fulfilled, "Request not fulfilled");
         assertTrue(status.randomWords[0] > 0, "Random number not received");
-        (,,,,,,, Rarity rarity,) = nftContract.tokenIdMetadata(1);
+        (,,, Rarity rarity,) = nftContract.tokenIdMetadata(1);
         assertTrue(rarity == Rarity.Common, "Rarity assigned");
 
         // Checking balance and token owner after minting

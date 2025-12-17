@@ -18,10 +18,6 @@ struct TokenMetadata {
     string collectionName;
     string symbol;
     uint256 tokenId;
-    string articleTitle;
-    string author;
-    uint256 publishDate;
-    string link;
     Rarity rarity;
     uint256 rarityNumber;
 }
@@ -39,7 +35,7 @@ contract NFT is IERC721, IERC721Receiver, VRFConsumerBaseV2Plus {
     string private _symbol;
     uint256 private mintPrice;
     uint256 public supply;
-    uint256 public nextTokenId;
+    uint256 public lastTokenId;
     uint256 public lastRequestId;
     uint32 public numWords = 1;
     uint256[] public requestList;
@@ -50,7 +46,7 @@ contract NFT is IERC721, IERC721Receiver, VRFConsumerBaseV2Plus {
         0x787d74caea10b2b357790d5b5247c2f63d1d91572a9846f780606e4d953677ae;
     uint256 private subId;
     uint16 private requestConfirmations = 3;
-    uint32 callbackGasLimit = 250000;
+    uint32 callbackGasLimit = 400000;
     address private vrfCoordinator;
 
     mapping(address => uint256) public balance;
@@ -60,6 +56,7 @@ contract NFT is IERC721, IERC721Receiver, VRFConsumerBaseV2Plus {
     mapping(uint256 => uint256) public requestToTokenId;
     mapping(uint256 => address) public requestToOwner;
     mapping(uint256 => TokenMetadata) public tokenIdMetadata;
+    mapping(uint256 => string) private _tokenURI;
 
     mapping(uint256 => RequestStatus) public requestStatus;
 
@@ -112,33 +109,15 @@ contract NFT is IERC721, IERC721Receiver, VRFConsumerBaseV2Plus {
         return _symbol;
     }
 
+    function tokenURI(uint256 tokenId) public view returns (string memory) {
+        require(tokenIdOwner[tokenId] != address(0), "Token not minted yet");
+        return _tokenURI[tokenId];
+    }
+
     function getTokenIdMetadata(
         uint256 tokenId
     ) public view returns (TokenMetadata memory) {
         return tokenIdMetadata[tokenId];
-    }
-
-    event SettedMetadata(
-        uint256 indexed tokenId,
-        string indexed author,
-        uint256 indexed publishDate,
-        string link,
-        string articleTitle
-    );
-
-    function setMetadata(
-        string memory articleTitle,
-        string memory author,
-        uint256 publishDate,
-        string memory link,
-        uint256 tokenId
-    ) external {
-        require(msg.sender == contractOwner, "Contract owner only");
-        tokenIdMetadata[tokenId].articleTitle = articleTitle;
-        tokenIdMetadata[tokenId].author = author;
-        tokenIdMetadata[tokenId].publishDate = publishDate;
-        tokenIdMetadata[tokenId].link = link;
-        emit SettedMetadata(tokenId, author, publishDate, link, articleTitle);
     }
 
     function getContractBalance() public view returns (uint256) {
@@ -185,9 +164,9 @@ contract NFT is IERC721, IERC721Receiver, VRFConsumerBaseV2Plus {
 
     function mint() external payable nonReentrant {
         require(msg.value >= mintPrice, "Funds insufficient");
-        require(supply >= nextTokenId + 1, "No more NFT available for minting");
-        requestRandomNumber(false);
-        requestToTokenId[lastRequestId] = nextTokenId + 1;
+        require(supply >= lastTokenId + 1, "No more NFT available for minting");
+        requestRandomNumber(true);
+        requestToTokenId[lastRequestId] = lastTokenId + 1;
         requestToOwner[lastRequestId] = msg.sender;
         if (msg.value > mintPrice) {
             (bool success, ) = payable(msg.sender).call{
@@ -214,14 +193,27 @@ contract NFT is IERC721, IERC721Receiver, VRFConsumerBaseV2Plus {
         uint256 tokenId = requestToTokenId[_requestId];
         if (rarityNumber < 11 && rarityNumber > 0) {
             tokenIdMetadata[tokenId].rarity = Rarity.Common;
+            _tokenURI[tokenId] = "https://bafybeidtdqqz332usfocmh2mzsmelzgqpeblpudp24cnweyx75ivpca25q.ipfs.w3s.link/ipfs/bafybeidtdqqz332usfocmh2mzsmelzgqpeblpudp24cnweyx75ivpca25q/common.json";
         } else if (rarityNumber < 15) {
             tokenIdMetadata[tokenId].rarity = Rarity.Uncommon;
+            _tokenURI[
+                tokenId
+            ] = "https://bafybeidtdqqz332usfocmh2mzsmelzgqpeblpudp24cnweyx75ivpca25q.ipfs.w3s.link/ipfs/bafybeidtdqqz332usfocmh2mzsmelzgqpeblpudp24cnweyx75ivpca25q/uncommon.json";
         } else if (rarityNumber < 18) {
             tokenIdMetadata[tokenId].rarity = Rarity.Rare;
+            _tokenURI[
+                tokenId
+            ] = "https://bafybeidtdqqz332usfocmh2mzsmelzgqpeblpudp24cnweyx75ivpca25q.ipfs.w3s.link/ipfs/bafybeidtdqqz332usfocmh2mzsmelzgqpeblpudp24cnweyx75ivpca25q/rare.json";
         } else if (rarityNumber < 20) {
             tokenIdMetadata[tokenId].rarity = Rarity.Epic;
+            _tokenURI[
+                tokenId
+            ] = "https://bafybeidtdqqz332usfocmh2mzsmelzgqpeblpudp24cnweyx75ivpca25q.ipfs.w3s.link/ipfs/bafybeidtdqqz332usfocmh2mzsmelzgqpeblpudp24cnweyx75ivpca25q/epic.json";
         } else {
             tokenIdMetadata[tokenId].rarity = Rarity.Legendary;
+            _tokenURI[
+                tokenId
+            ] = "https://bafybeidtdqqz332usfocmh2mzsmelzgqpeblpudp24cnweyx75ivpca25q.ipfs.w3s.link/ipfs/bafybeidtdqqz332usfocmh2mzsmelzgqpeblpudp24cnweyx75ivpca25q/legendary.json";
         }
         address owner = requestToOwner[_requestId];
         tokenIdOwner[tokenId] = owner;
@@ -231,7 +223,7 @@ contract NFT is IERC721, IERC721Receiver, VRFConsumerBaseV2Plus {
         tokenIdMetadata[tokenId].collectionName = collectionName;
         tokenIdMetadata[tokenId].rarityNumber = rarityNumber;
         requestStatus[_requestId].exists = false;
-        nextTokenId = tokenId;
+        lastTokenId = tokenId;
         emit Transfer(address(0), owner, tokenId);
         emit RequestFulfilled(_requestId, _randomWords, rarityNumber);
     }
@@ -242,7 +234,7 @@ contract NFT is IERC721, IERC721Receiver, VRFConsumerBaseV2Plus {
     }
 
     function ownerOf(uint256 tokenId) external view returns (address) {
-        require(tokenId <= nextTokenId, "Token Id requested not mintend yet");
+        require(tokenId <= lastTokenId, "Token Id requested not mintend yet");
         return tokenIdOwner[tokenId];
     }
 
