@@ -148,6 +148,7 @@ contract NFTTest is Test {
     }
 
     // setApprovalForAll with address(0), should revert
+    
     function testSetApprovalForAll_UsingAddress0() public {
         vm.expectRevert("Choose a valid address");
         nftContract.setApprovalForAll(address(0), true);
@@ -174,9 +175,9 @@ contract NFTTest is Test {
         coordinatorMock.fulfillRandomWords(requestId, address(nftContract));
         vm.prank(user1);
         vm.expectRevert("Invalid transfer address");
-        nftContract.safeTransferFrom(user1, address(0), 1);
+        nftContract.safeTransferFrom(user1, address(0), 1, "");
         vm.expectRevert("Invalid transfer address");
-        nftContract.safeTransferFrom(address(0), user1, 1);
+        nftContract.safeTransferFrom(address(0), user1, 1, "");
     }
 
     // Successful safeTransferFrom, verify token moves from user1 to user2 and back
@@ -190,13 +191,13 @@ contract NFTTest is Test {
         vm.prank(user1);
         nftContract.approve(user2, 1);
         vm.prank(user1);
-        nftContract.safeTransferFrom(user1, user2, 1);
+        nftContract.safeTransferFrom(user1, user2, 1, "");
         assertEq(nftContract.balance(user2), 1);
 
         vm.prank(user2);
         nftContract.approve(user1, 1);
         vm.prank(user2);
-        nftContract.safeTransferFrom(user2, user1, 1);
+        nftContract.safeTransferFrom(user2, user1, 1, "");
         assertEq(nftContract.balance(user1), 1);
     }
 
