@@ -26,7 +26,7 @@ contract NFTTest is Test {
         subId = coordinatorMock.createSubscription();
 
         // Fund subscription
-        coordinatorMock.fundSubscriptionWithNative{value : 10000000 ether}(subId);
+        coordinatorMock.fundSubscriptionWithNative{value: 10000000 ether}(subId);
 
         // Create a instance of the NFT Contract
         nftContract = new NFT("DnA collection", "DnA", 1 ether, 1000, address(coordinatorMock), subId);

@@ -165,8 +165,9 @@ contract NFT is IERC721, IERC721Receiver, VRFConsumerBaseV2Plus {
     function mint() external payable nonReentrant {
         require(msg.value >= mintPrice, "Funds insufficient");
         require(supply >= lastTokenId + 1, "No more NFT available for minting");
+        lastTokenId++;
         requestRandomNumber(true);
-        requestToTokenId[lastRequestId] = lastTokenId + 1;
+        requestToTokenId[lastRequestId] = lastTokenId;
         requestToOwner[lastRequestId] = msg.sender;
         if (msg.value > mintPrice) {
             (bool success, ) = payable(msg.sender).call{
@@ -193,7 +194,9 @@ contract NFT is IERC721, IERC721Receiver, VRFConsumerBaseV2Plus {
         uint256 tokenId = requestToTokenId[_requestId];
         if (rarityNumber < 11 && rarityNumber > 0) {
             tokenIdMetadata[tokenId].rarity = Rarity.Common;
-            _tokenURI[tokenId] = "https://bafybeidtdqqz332usfocmh2mzsmelzgqpeblpudp24cnweyx75ivpca25q.ipfs.w3s.link/ipfs/bafybeidtdqqz332usfocmh2mzsmelzgqpeblpudp24cnweyx75ivpca25q/common.json";
+            _tokenURI[
+                tokenId
+            ] = "https://bafybeidtdqqz332usfocmh2mzsmelzgqpeblpudp24cnweyx75ivpca25q.ipfs.w3s.link/ipfs/bafybeidtdqqz332usfocmh2mzsmelzgqpeblpudp24cnweyx75ivpca25q/common.json";
         } else if (rarityNumber < 15) {
             tokenIdMetadata[tokenId].rarity = Rarity.Uncommon;
             _tokenURI[
@@ -279,7 +282,7 @@ contract NFT is IERC721, IERC721Receiver, VRFConsumerBaseV2Plus {
         address from,
         address to,
         uint256 tokenId,
-        bytes memory data
+        bytes calldata data
     ) public virtual {
         require(
             from != address(0) && to != address(0),
@@ -294,7 +297,7 @@ contract NFT is IERC721, IERC721Receiver, VRFConsumerBaseV2Plus {
         address to,
         uint256 tokenId
     ) public {
-        safeTransferFrom(from, to, tokenId, "");
+        safeTransferFrom(from, to, tokenId);
     }
 
     function approve(address to, uint256 tokenId) external {
